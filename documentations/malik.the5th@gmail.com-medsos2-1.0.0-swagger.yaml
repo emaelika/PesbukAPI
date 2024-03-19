@@ -1,0 +1,365 @@
+openapi: 3.0.0
+info:
+  description: |
+    This is a sample Petstore server.  You can find
+    out more about Swagger at
+    [http://swagger.io](http://swagger.io) or on
+    [irc.freenode.net, #swagger](http://swagger.io/irc/).
+  version: "1.0.0"
+  title: "Pesbuk API"
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  # Added by API Auto Mocking Plugin
+  
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/malik.the5th@gmail.com/medsos2/1.0.0
+  - url: 'https://petstore.swagger.io/v2'
+ 
+tags:
+  - name: user
+    description: Organize data user
+  - name: posting
+    description: Organize data posting
+  - name: comments
+    description: Organize data comments
+paths:
+  /register:
+    post:
+      tags: 
+        - user
+      description: "register user"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: "Budi Irawan"
+              email: "budi@mail.id"
+              password: "admin123"
+              birthday: "17/08/1998"
+        
+              address: "Sukolilo"
+        
+      responses:
+        '201':
+          description: "sukses menambahkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+              $ref: '#/components/responses/500'
+  /users:
+    get:
+      tags: 
+        - user
+      security: 
+        - bearerAuth: []
+      description: "mendapatkan profile pengguna berdasarkan token"
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan data"
+                data:
+                  id: 1
+                  username: "Budi Irawan"
+                  email: "budi@mail.id"
+        '500':
+              $ref: '#/components/responses/500'
+    put:
+      tags:
+        - user
+      security: 
+        - bearerAuth: []
+      summary: "update profile user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: "behasil mengubah data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil mengubah data"
+                data:
+                  id: 1
+                  username: "Budi Gunawan"
+                  email: "budi@mail.id"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+  /login:
+    post:
+      tags:
+        - user
+      summary: "login user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      
+      responses:
+        '200':
+          description: "sukses login"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code: 200
+                message: "berhasil login"
+                data:
+                  username: "Budi Irawan"
+                  email: "budi@mail.id"
+                  token: "aidjfaoidjhauanjer$oqwkofok"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+  /postings:
+    post:
+      tags: 
+       - posting
+      summary: Add item to database
+      description: "Endpoint yang digunakan untuk menambahkan data posting sesuai dengan hak akses pada token JWT"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiResponse'
+            example: 
+              nama_posting: "kecap manis"
+              stok: 100
+      responses:
+        '201':
+          description: "sukses menambahkan data posting"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int8
+                  message:
+                    type: string
+              example: 
+                code: 201
+                message: "selamat data berhasil ditambahkan"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    get:
+      tags: 
+        - posting
+      summary: Get all item data
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataArrayResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan posting"
+                data:
+                  - barcode: "ba01ij05"
+                    nama_posting: "tango"
+                    stok: 500
+                  - barcode: "c01k00i"
+                    nama_posting: "coki-coki"
+                    stok: 1000
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+  /postings/{postings_id}:
+    get:
+      tags: 
+        - posting
+      parameters: 
+        - name: postings_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: c01k00i
+      responses:
+        '200':
+          description: "berhasil mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example:
+                code: 200
+                message: "sukses mendapatkan data"
+                data:
+                  barcode: "c01k00i"
+                  nama_posting: "coki-coki"
+                  stok: 1000
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    posting:
+      type: object
+      properties:
+        barcode:
+          type: string
+        nama_posting:
+          type: string
+        stok:
+          type: integer
+          format: int64
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        petId:
+          type: integer
+          format: int64
+        quantity:
+          type: integer
+          format: int32
+        shipDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          description: Order Status
+          enum:
+            - placed
+            - approved
+            - delivered
+        complete:
+          type: boolean
+          default: false
+    User:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+        birthday:
+          type: string
+        address:
+          type: string
+        avatar: 
+          type: string
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    ApiDataResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        data:
+          type: object
+        message:
+          type: string
+    ApiDataArrayResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int8
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+  requestBodies:
+    User:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+      required: true
+    UserArray:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+      description: List of user object
+      required: true
+  responses:
+    '400':
+      description: "input data kurang tepat"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 400
+            message: "terdapat kesalahan pada data input"
+    '500':
+      description: "server error"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
