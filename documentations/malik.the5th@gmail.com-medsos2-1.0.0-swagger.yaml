@@ -58,59 +58,6 @@ paths:
           $ref: '#/components/responses/400'
         '500':
               $ref: '#/components/responses/500'
-  /users:
-    get:
-      tags: 
-        - user
-      security: 
-        - bearerAuth: []
-      description: "mendapatkan profile pengguna berdasarkan token"
-      responses:
-        '200':
-          description: "sukses mendapatkan data"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDataResponse'
-              example: 
-                code: 200
-                message: "berhasil mendapatkan data"
-                data:
-                  id: 1
-                  username: "Budi Irawan"
-                  email: "budi@mail.id"
-        '500':
-              $ref: '#/components/responses/500'
-    put:
-      tags:
-        - user
-      security: 
-        - bearerAuth: []
-      summary: "update profile user"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        '200':
-          description: "behasil mengubah data"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiDataResponse'
-              example: 
-                code : 200
-                message: "berhasil mengubah data"
-                data:
-                  id: 1
-                  username: "Budi Gunawan"
-                  email: "budi@mail.id"
-        '400':
-          $ref: '#/components/responses/400'
-        '500':
-          $ref: '#/components/responses/500'
   /login:
     post:
       tags:
@@ -142,12 +89,140 @@ paths:
                 message: "berhasil login"
                 data:
                   username: "Budi Irawan"
-                  email: "budi@mail.id"
                   token: "aidjfaoidjhauanjer$oqwkofok"
+                  avatar: "uploads/image.jpg"
         '400':
           $ref: '#/components/responses/400'
         '500':
           $ref: '#/components/responses/500'
+  /users:
+    get:
+      tags: 
+        - user
+      security: 
+        - bearerAuth: []
+      description: "mendapatkan profile pengguna berdasarkan token"
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan data"
+                data:
+                  id: 1
+                  username: "Budi Irawan"
+                  email: "budi@mail.id"
+                  password: "admin123"
+                  birthday: "17/08/1998"
+         
+                  address: "Sukolilo"
+                  avatar: "uploads/image.jpg"
+        '500':
+              $ref: '#/components/responses/500'
+    put:
+      tags:
+        - user
+      security: 
+        - bearerAuth: []
+      summary: "update profile user"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: "behasil mengubah data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil mengubah data"
+                data:
+                  id: 1
+                  username: "Budi Gunawan"
+                  email: "budi@mail.id"
+                  password: "admin123"
+                  birthday: "17/08/1998"
+         
+                  address: "Sukolilo"
+                  avatar: "uploads/image.jpg"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      security: 
+        - bearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil menghapus data"
+
+                  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: The message to be displayed.
+                    example: "Masukkan user_id!"
+  # /users/{user_id}:
+  #   get:
+  #     tags: 
+  #       - user
+  #     security: 
+  #       - bearerAuth: []
+  #     description: "mendapatkan profile pengguna lain berdasarkan id"
+  #     parameters:
+  #       - name: user_id
+  #         in: path
+  #         description: 'The id that needs to be fetched. Use user1 for testing. '
+  #         required: true
+  #         schema:
+  #           type: string
+  #     responses:
+  #       '200':
+  #         description: "sukses mendapatkan data"
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/ApiDataResponse'
+  #             example: 
+  #               code: 200
+  #               message: "berhasil mendapatkan data"
+  #               data:
+  #                 id: 1
+  #                 username: "Budi Irawan"
+  #                 email: "budi@mail.id"
+  #                 birthday: "17/08/1998"
+         
+  #                 address: "Sukolilo"
+  #                 avatar: "uploads/image.jpg"
+  #       '500':
+  #             $ref: '#/components/responses/500'
   /postings:
     post:
       tags: 
@@ -290,12 +365,36 @@ components:
           type: string
           format: password
           minLength: 8
+          maxLength: 20
         birthday:
           type: string
         address:
           type: string
         avatar: 
           type: string
+    UserUpdate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+         type: string
+         format: email
+        password:
+         type: string
+         format: password
+         minLength: 8
+         maxLength: 20
+        birthday:
+         type: string
+        address:
+          type: string
+        avatar: 
+         type: string
+         format: binary
     ApiResponse:
       type: object
       properties:
@@ -333,6 +432,11 @@ components:
           schema:
             $ref: '#/components/schemas/User'
       required: true
+    UserUpdate:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/UserUpdate'
     UserArray:
       content:
         application/json:
