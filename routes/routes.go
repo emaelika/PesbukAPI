@@ -15,7 +15,7 @@ func InitRoute(c *echo.Echo, ctl user.UserController, tc todo.TodoController) {
 	// c.GET("/users", ctl.ListUser(), echojwt.WithConfig(echojwt.Config{
 	// 	SigningKey: []byte(config.JWTSECRET),
 	// })) // get all user -> butuh penanda khusus
-	c.GET("/users/", ctl.Profile(), echojwt.WithConfig(echojwt.Config{
+	c.GET("/profile", ctl.Profile(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	})) // get profile -> butuh penanda khusus
 	// c.PUT("/users/:id", ctl.Update(), echojwt.WithConfig(echojwt.Config{

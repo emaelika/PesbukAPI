@@ -27,11 +27,11 @@ type UserQuery interface {
 
 type User struct {
 	ID       	 uint
-	Name     	 string `validate:"required"`
-	Email        string `validate:"required,email"`
-	Username	 string `validate:"required"`
-	Placeofbirth string `validate:"required"`
-	Dateofbirth  time.Time `validate:"required"`
-	Password 	 string `validate:"required"`
+	Name     	 string 
+	Email        string 
+	Username	 string 
+	Placeofbirth string 
+	Dateofbirth  time.Time 
+	Password 	 string 
 	Image    	 []byte
 }
