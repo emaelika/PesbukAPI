@@ -1,8 +1,8 @@
 package config
 
 import (
-	"21-api/features/todo/repository"
-	user "21-api/features/user/repository"
+	"PesbukAPI/features/todo/repository"
+	user "PesbukAPI/features/user/data"
 	"fmt"
 	"os"
 
@@ -77,7 +77,7 @@ func InitSQL(c AppConfig) *gorm.DB {
 		return nil
 	}
 
-	db.AutoMigrate(&user.UserModel{}, &repository.TodoModel{})
+	db.AutoMigrate(&user.User{}, &repository.TodoModel{})
 
 	return db
 }

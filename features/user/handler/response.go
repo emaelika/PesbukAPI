@@ -1,11 +1,7 @@
 package handler
 
 type LoginResponse struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	ID    uint   `json:"id"`
+	Email string `json:"username"`
 	Token string `json:"token"`
-}
-type ProfilResponse struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
 }

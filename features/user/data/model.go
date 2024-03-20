@@ -1,19 +1,16 @@
-package repository
+package data
 
 import (
-	"21-api/features/todo/repository"
-	"time"
-
-	"gorm.io/gorm"
+	"PesbukAPI/features/todo/repository"
 )
 
-type UserModel struct {
-	gorm.Model
+type User struct {
+	ID 			 uint 					`gorm:"primary_key;auto_increment"`
 	Name     	 string                 `validate:"required"`
 	Email        string                 `gorm:"unique"`
 	Username 	 string                 `validate:"required"`
 	Placeofbirth string
-	Dateofbirth  time.Time
+	Dateofbirth  string
 	Password	 string
 	Image		 []byte 				`gorm:"type:longblob"`
 	Posts    	 []repository.TodoModel `gorm:"foreignKey:UserID"`

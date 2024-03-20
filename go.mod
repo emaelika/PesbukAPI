@@ -1,4 +1,4 @@
-module 21-api
+module PesbukAPI
 
 go 1.20
 

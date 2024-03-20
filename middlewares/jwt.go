@@ -1,48 +1,45 @@
 package middlewares
 
 import (
-	"21-api/config"
+	"PesbukAPI/config"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// GenerateJWT digunakan untuk membuat token JWT dengan ID.
 func GenerateJWT(id uint) (string, error) {
-	var data = jwt.MapClaims{}
-	// custom data
-	data["id"] = id
-	// mandatory data
-	data["iat"] = time.Now().Unix()
-	data["exp"] = time.Now().Add(time.Hour * 3).Unix()
+    var data = jwt.MapClaims{}
+    data["id"] = id
+    data["iat"] = time.Now().Unix()
+    data["exp"] = time.Now().Add(time.Hour * 3).Unix()
 
-	var proccessToken = jwt.NewWithClaims(jwt.SigningMethodHS256, data)
+    var processToken = jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 
-	result, err := proccessToken.SignedString([]byte(config.JWTSECRET))
+    result, err := processToken.SignedString([]byte(config.JWTSECRET))
 
-	if err != nil {
-		return "", err
-	}
+    if err != nil {
+        defer func() {
+            if err := recover(); err != nil {
+                log.Println("error jwt creation:", err)
+            }
+        }()
+        return "", errors.New("terjadi masalah pembuatan")
+    }
 
-	return result, nil
+    return result, nil
 }
 
-func ExtractId(t *jwt.Token) (uint, error) {
-	var userID uint
+// DecodeToken digunakan untuk mendekode token JWT dan mengambil ID.
+func DecodeToken(token *jwt.Token) uint {
+    var result uint
+    var claim = token.Claims.(jwt.MapClaims)
 
-	expiredTime, err := t.Claims.GetExpirationTime()
-	if err != nil {
-		return 0, err
-	}
+    if val, found := claim["id"]; found {
+        result = uint(val.(float64)) // Konversi dari float64 ke uint
+    }
 
-	var eTime = *expiredTime
-
-	if t.Valid && eTime.Compare(time.Now()) > 0 {
-		var tokenClaims = t.Claims.(jwt.MapClaims)
-		userID = uint(tokenClaims["id"].(float64))
-
-		return userID, nil
-	}
-
-	return 0, errors.New("token tidak valid")
+    return result
 }

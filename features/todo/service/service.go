@@ -1,9 +1,9 @@
 package service
 
 import (
-	"21-api/features/todo"
-	"21-api/features/todo/handler"
-	"21-api/middlewares"
+	"PesbukAPI/features/todo"
+	"PesbukAPI/features/todo/handler"
+	"PesbukAPI/middlewares"
 	"errors"
 	"log"
 
@@ -24,10 +24,10 @@ func NewTodoService(query todo.TodoQuery) todo.TodoService {
 }
 
 func (ts service) AddTodo(pemilik *jwt.Token, kegiatanBaru todo.Todo) (todo.Todo, error) {
-	userID, err := middlewares.ExtractId(pemilik)
-	if err != nil {
-		log.Println(err.Error())
-		return todo.Todo{}, err
+	userID := middlewares.DecodeToken(pemilik)
+	if userID == 0 {
+		log.Println("todo service: token tidak valid")
+		return todo.Todo{}, errors.New("token tidak valid")
 	}
 
 	var cekValid = handler.TodoRequest{
@@ -35,7 +35,7 @@ func (ts service) AddTodo(pemilik *jwt.Token, kegiatanBaru todo.Todo) (todo.Todo
 		Deadline:  kegiatanBaru.Deadline,
 		Deskripsi: kegiatanBaru.Deskripsi,
 	}
-	err = ts.v.Struct(&cekValid)
+	err := ts.v.Struct(&cekValid)
 	if err != nil {
 		log.Println("error validasi", err.Error())
 		return todo.Todo{}, errors.New("data tidak valid")
@@ -50,13 +50,15 @@ func (ts service) AddTodo(pemilik *jwt.Token, kegiatanBaru todo.Todo) (todo.Todo
 	return result, nil
 
 }
+
 func (ts service) GetTodos(pemilik *jwt.Token) ([]todo.Todo, error) {
-	id, err := middlewares.ExtractId(pemilik)
-	if err != nil {
-		log.Println("todo service,", err.Error())
-		return nil, err
+	userID := middlewares.DecodeToken(pemilik)
+	if userID == 0 {
+		log.Println("todo service: token tidak valid")
+		return nil, errors.New("token tidak valid")
 	}
-	data, err := ts.tq.GetTodos(id)
+
+	data, err := ts.tq.GetTodos(userID)
 	if err != nil {
 		log.Println("todo service,", err.Error())
 		return nil, err
@@ -65,17 +67,18 @@ func (ts service) GetTodos(pemilik *jwt.Token) ([]todo.Todo, error) {
 }
 
 func (ts service) GetTodo(pemilik *jwt.Token, idTodo uint) (todo.Todo, error) {
-	id, err := middlewares.ExtractId(pemilik)
-	if err != nil {
-		log.Println("todo service,", err.Error())
-		return todo.Todo{}, err
+	userID := middlewares.DecodeToken(pemilik)
+	if userID == 0 {
+		log.Println("todo service: token tidak valid")
+		return todo.Todo{}, errors.New("token tidak valid")
 	}
+
 	data, err := ts.tq.GetTodo(idTodo)
 	if err != nil {
 		log.Println("todo service,", err.Error())
 		return todo.Todo{}, err
 	}
-	if data.UserID != id {
+	if data.UserID != userID {
 		log.Println("todo service, todo ini bukan milik anda")
 		return todo.Todo{}, errors.New("unauthorized")
 	}
@@ -83,17 +86,18 @@ func (ts service) GetTodo(pemilik *jwt.Token, idTodo uint) (todo.Todo, error) {
 }
 
 func (ts service) UpdateTodo(pemilik *jwt.Token, data todo.Todo) (todo.Todo, error) {
-	id, err := middlewares.ExtractId(pemilik)
-	if err != nil {
-		log.Println("todo service,", err.Error())
-		return todo.Todo{}, err
+	userID := middlewares.DecodeToken(pemilik)
+	if userID == 0 {
+		log.Println("todo service: token tidak valid")
+		return todo.Todo{}, errors.New("token tidak valid")
 	}
+
 	val, err := ts.tq.GetTodo(data.ID)
 	if err != nil {
 		log.Println("todo service,", err.Error())
 		return todo.Todo{}, err
 	}
-	if val.UserID != id {
+	if val.UserID != userID {
 		log.Println("todo service, todo ini bukan milik anda")
 		return todo.Todo{}, errors.New("unauthorized")
 	}

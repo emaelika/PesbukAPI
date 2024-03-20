@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"21-api/features/todo"
+	"PesbukAPI/features/todo"
 	"log"
 
 	"gorm.io/gorm"

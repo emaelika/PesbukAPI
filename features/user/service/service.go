@@ -1,9 +1,9 @@
-package service
+package services
 
 import (
-	"21-api/features/user"
-	"21-api/helper"
-	"21-api/middlewares"
+	"PesbukAPI/features/user"
+	"PesbukAPI/helper"
+	"PesbukAPI/middlewares"
 	"errors"
 	"log"
 
@@ -12,85 +12,171 @@ import (
 )
 
 type service struct {
-	uq user.UserQuery
-	v  *validator.Validate
-	pm helper.PasswordManager
+	model 	user.UserModel
+	pm 		helper.PasswordManager
+	v 		*validator.Validate
 }
 
-func NewUserService(query user.UserQuery) user.UserService {
+func NewService(m user.UserModel) user.UserService {
 	return &service{
-		uq: query,
-		v:  validator.New(validator.WithRequiredStructEnabled()),
-		pm: helper.NewPasswordManager(),
+		model: 	m,
+		pm:		helper.NewPasswordManager(),
+		v:		validator.New(),
 	}
 }
 
-func (us service) AddUser(data user.User) error {
-	err := us.v.Struct(&data)
+func (s *service) Register(newData user.User) error {
+	var registerValidate user.Register
+    registerValidate.Name = newData.Name
+    registerValidate.Email = newData.Email
+	registerValidate.Username = newData.Username
+    registerValidate.Placeofbirth = newData.Placeofbirth
+    registerValidate.Dateofbirth = newData.Dateofbirth
+	registerValidate.Password = newData.Password
+	err := s.v.Struct(&registerValidate)
 	if err != nil {
 		log.Println("error validasi", err.Error())
-		return errors.New("data tidak valid")
-	}
-
-	newPassword, err := us.pm.HashPassword(data.Password)
-	if err != nil {
-		return errors.New("password error")
-	}
-	data.Password = newPassword
-
-	err = us.uq.AddUser(data)
-	if err != nil {
-		log.Println("error query", err.Error())
 		return err
+	}
+
+	newPassword, err := s.pm.HashPassword(newData.Password)
+	if err != nil {
+		return errors.New(helper.ServiceGeneralError)
+	}
+	newData.Password = newPassword
+
+	err = s.model.AddUser(newData)
+	if err != nil {
+		return errors.New(helper.ServerGeneralError)
 	}
 	return nil
 }
-
-func (us service) Login(email string, password string) (user.User, string, error) {
-	// validasi
-	var dummyValidate = user.User{Name: "A",
-		Email:       email,
-		Password: password}
-	err := us.v.Struct(&dummyValidate)
+func (s *service) Login(loginData user.User) (user.User, string, error) {
+	var loginValidate user.Login
+	loginValidate.Email = loginData.Email
+	loginValidate.Password = loginData.Password
+	err := s.v.Struct(&loginValidate)
 	if err != nil {
 		log.Println("error validasi", err.Error())
-		return user.User{}, "", errors.New("data tidak valid")
-	}
-
-	// ngambil data
-	data, err := us.uq.Login(email)
-	if err != nil {
-		log.Println(err.Error())
 		return user.User{}, "", err
 	}
 
-	// compare hash password
-	err = us.pm.ComparePassword(password, data.Password)
+	dbData, err := s.model.Login(loginValidate.Email)
 	if err != nil {
-		log.Println("user service,", err.Error())
-		return user.User{}, "", err
-	}
-	// token
-	token, err := middlewares.GenerateJWT(data.ID)
-	if err != nil {
-		log.Println(err.Error())
-		return user.User{}, "", err
+		return user.User{}, "",err
 	}
 
-	return data, token, nil
+	err = s.pm.ComparePassword(loginValidate.Password, dbData.Password)
+	if err != nil {
+		return user.User{}, "", errors.New(helper.UserCredentialError)
+	}
+
+	token, err := middlewares.GenerateJWT(dbData.ID)
+	if err != nil {
+		return user.User{}, "", errors.New(helper.ServiceGeneralError)
+	}
+
+	return dbData, token, nil
 }
 
-func (us service) Profile(token *jwt.Token) (user.User, error) {
-	id, err := middlewares.ExtractId(token)
+func (s *service) Profile(token *jwt.Token) (user.User, error) {
+	decodeId := middlewares.DecodeToken(token)
+	result, err := s.model.GetUserByID(decodeId)
 	if err != nil {
-		log.Println(err.Error())
 		return user.User{}, err
 	}
 
-	data, err := us.uq.Profile(id)
-	if err != nil {
-		log.Println(err.Error())
-		return user.User{}, err
-	}
-	return data, nil
+	return result, nil
+}
+
+func (s *service) Update(token *jwt.Token, idFromParam uint, newData user.User) (user.User, error) {
+    decodedID := middlewares.DecodeToken(token)
+
+    if idFromParam != decodedID {
+        return user.User{}, errors.New("you can only update your own account")
+    }
+
+    existingUser, err := s.model.GetUserByID(decodedID)
+    if err != nil {
+        return user.User{}, errors.New("user not found")
+    }
+
+    if newData.Name != "" {
+        existingUser.Name = newData.Name
+    }
+
+    if newData.Email != "" {
+        existingUser.Email = newData.Email
+    }
+
+    if newData.Username != "" {
+        existingUser.Username = newData.Username
+    }
+
+    if newData.Placeofbirth != "" {
+        existingUser.Placeofbirth = newData.Placeofbirth
+    }
+
+    if newData.Dateofbirth != "" {
+        existingUser.Dateofbirth = newData.Dateofbirth
+    }
+
+    if newData.Password != "" {
+        newPassword, err := s.pm.HashPassword(newData.Password)
+        if err != nil {
+            return user.User{}, errors.New(helper.ServiceGeneralError)
+        }
+        existingUser.Password = newPassword
+    }
+
+    if len(newData.Image) > 0 {
+        existingUser.Image = newData.Image
+    }
+
+    result, err := s.model.Update(decodedID, existingUser)
+    if err != nil {
+        return user.User{}, err
+    }
+
+    return result, nil
+}
+
+
+func (s *service) Delete(token *jwt.Token, id uint) error {
+    decodedID := middlewares.DecodeToken(token)
+    if decodedID == 0 {
+        log.Println("error decode token:", "token tidak ditemukan")
+        return errors.New("data tidak valid")
+    }
+
+    userFromToken, err := s.model.GetUserByID(decodedID)
+    if err != nil {
+        return err
+    }
+
+    if userFromToken.ID != id {
+        return errors.New("Anda hanya dapat menghapus akun Anda sendiri")
+    }
+
+    err = s.model.Delete(id)
+    if err != nil {
+        return errors.New(helper.CannotDelete)
+    }
+
+    return nil
+}
+
+func (s *service) GetUserByIDParam(token *jwt.Token, idFromParam uint) (user.User, error) {
+    decodedID := middlewares.DecodeToken(token)
+
+    if idFromParam != decodedID {
+        return user.User{}, errors.New("you can only view your own account")
+    }
+
+    result, err := s.model.GetUserByIDE(decodedID)
+    if err != nil {
+        return user.User{}, err
+    }
+
+    return result, nil
 }
