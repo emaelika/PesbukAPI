@@ -1,0 +1,823 @@
+openapi: 3.0.0
+info:
+  description: |
+    This is a sample Petstore server.  You can find
+    out more about Swagger at
+    [http://swagger.io](http://swagger.io) or on
+    [irc.freenode.net, #swagger](http://swagger.io/irc/).
+  version: "1.0.0"
+  title: "Pesbuk API"
+  termsOfService: 'http://swagger.io/terms/'
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  # Added by API Auto Mocking Plugin
+  
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/malik.the5th@gmail.com/medsos2/1.0.0
+  - url: 'https://petstore.swagger.io/v2'
+ 
+tags:
+  - name: user
+    description: Organize data user
+  - name: post
+    description: Organize data post
+  - name: comment
+    description: Organize data comment
+paths:
+  /register:
+    post:
+      tags: 
+        - user
+      description: "register user"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: "budidoremi"
+              email: "budi@mail.id"
+              password: "admin123"
+              birthday: "17/08/1998"
+        
+              address: "Sukolilo"
+        
+      responses:
+        '201':
+          description: "sukses menambahkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: 201
+                message: "data anda berhasil mendaftar"
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+  /login:
+    post:
+      tags:
+        - user
+      summary: "login user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      
+      responses:
+        '201':
+          description: "sukses login"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code: 201
+                message: "berhasil login"
+                data:
+                  username: "budidoremi"
+                  token: "aidjfaoidjhauanjer$oqwkofok"
+                  avatar: "uploads/image.jpg"
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  /users:
+    get:
+      tags: 
+        - user
+      security: 
+        - bearerAuth: []
+      description: "mendapatkan profile pengguna berdasarkan token"
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan data"
+                data:
+                  id: 1
+                  username: "budidoremi"
+                  email: "budi@mail.id"
+                  password: "admin123"
+                  birthday: "17/08/1998"
+         
+                  address: "Sukolilo"
+                  avatar: "uploads/image.jpg"
+        '500':
+              $ref: '#/components/responses/500'
+    put:
+      tags:
+        - user
+      security: 
+        - bearerAuth: []
+      summary: "update profile user"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: "behasil mengubah data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil mengubah data"
+                data:
+                  id: 1
+                  username: "budigunawan"
+                  email: "budi@mail.id"
+                  password: "admin123"
+                  birthday: "17/08/1998"
+         
+                  address: "Sukolilo"
+                  avatar: "uploads/image.jpg"
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUser
+      security: 
+        - bearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil menghapus data"
+
+                  
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  # /users/{user_id}:
+  #   get:
+  #     tags: 
+  #       - user
+  #     security: 
+  #       - bearerAuth: []
+  #     description: "mendapatkan profile pengguna lain berdasarkan id"
+  #     parameters:
+  #       - name: user_id
+  #         in: path
+  #         description: 'The id that needs to be fetched. Use user1 for testing. '
+  #         required: true
+  #         schema:
+  #           type: string
+  #     responses:
+  #       '200':
+  #         description: "sukses mendapatkan data"
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: '#/components/schemas/ApiDataResponse'
+  #             example: 
+  #               code: 200
+  #               message: "berhasil mendapatkan data"
+  #               data:
+  #                 id: 1
+  #                 username: "Budi Irawan"
+  #                 email: "budi@mail.id"
+  #                 birthday: "17/08/1998"
+         
+  #                 address: "Sukolilo"
+  #                 avatar: "uploads/image.jpg"
+  #       '500':
+  #             $ref: '#/components/responses/500'
+  /posts:
+    post:
+      tags: 
+       - post
+      summary: Add item to database
+      description: "Endpoint yang digunakan untuk menambahkan data posting sesuai dengan hak akses pada token JWT"
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostReq'
+            example: 
+              username: "budiganteng"
+              avatar: "uploads/1/budi.jpg"
+              content: "Mengapa dinamakan ayam? Karena laper, xixixi"
+
+      responses:
+      # perlu dibicarakan, habis posting mau ke mana? beranda atau postingan tsb?
+        '201':
+          description: "sukses menambahkan data posting"
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/ApiDataResponse' 
+              example: 
+                code: 201
+                message: "selamat data berhasil ditambahkan"
+                data: 
+                  id: 1
+                  username: "budiganteng"
+                  avatar: "uploads/1/budi.jpg"
+                  content: "Mengapa dinamakan ayam? Karena laper, xixixi"
+                  comment_count: 0
+                  date: "20/03/2024"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    get:
+      tags: 
+        - post
+      summary: Get all item data
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataArrayResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan post"
+                data:
+                  - id: "4"
+                    username: "budigunawan"
+                    avatar: "uploads/1/budi.jpg"
+                    picture: "uploads/image.jpg"
+                    comment_count: 5
+                  - id: "2"
+                    username: "donquixote"
+                    avatar: "uploads/2/don.jpg"
+                    content: "Sahur gaesss"
+                    picture: "uploads/2/sahur.jpg"
+                    comment_count: 23
+                pagination:
+                  page: 1
+                  pagesize: 10
+                  total_pages: 1
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  /posts/{post_id}:
+    get:
+      tags: 
+        - post
+      parameters: 
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: "berhasil mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+              example:
+                code: 200
+                message: "sukses mendapatkan data"
+                data:
+                    id: "4"
+                    username: "budigunawan"
+                    avatar: "uploads/1/budi.jpg"
+                    picture: "uploads/image.jpg"
+                    comment_count: 5
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+    put: 
+      tags:
+        - post
+      parameters: 
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      security: 
+        - bearerAuth: []
+      summary: "update profile user"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PostReq'
+      responses:
+        '201':
+          description: "sukses update post"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example:
+                code: 200
+                message: "sukses mendapatkan data"
+                data:
+                  id: "4"
+                  username: "budigunawan"
+                  avatar: "uploads/1/budi.jpg"
+                  content: "Edit: Bukan ane yang kehilangan motor"
+                  picture: "uploads/image.jpg"
+                  comment_count: 5
+
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - post
+      summary: Delete post
+      description: This can only be done by the logged in user.
+      parameters: 
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      operationId: deletePost
+      security: 
+        - bearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil menghapus data"
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+  /comments/posts/{post_id}:
+    get:
+      tags: 
+        - comment
+      summary: Get all item data
+      parameters: 
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      responses:
+        '200':
+          description: "sukses mendapatkan data"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataArrayResponse'
+              example: 
+                code: 200
+                message: "berhasil mendapatkan posting"
+                data:
+                  - id: "4"
+                    username: "budigunawan"
+                    avatar: "uploads/1/budi.jpg"
+                    content: "Bagus pemandangannya? Di mana tuh pak?"
+                    date: "23/03/2024"
+                  - id: "5"
+                    username: "donquixote"
+                    avatar: "uploads/2/don.jpg"
+                    content: "Di Wakatobi ni"
+                    date: "23/03/2024"
+
+                pagination:
+                  page: 1
+                  pagesize: 10
+                  total_pages: 1
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      tags: 
+       - comment
+      summary: Add item to database
+      description: "Endpoint yang digunakan untuk menambahkan komentar sesuai dengan hak akses pada token JWT"
+      parameters: 
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            example: 
+              username: "makhlukdarat"
+              avatar: "uploads/3/makhluk.jpg"
+              content: "Bisa aje pak, xixixi"
+
+      responses:
+      # perlu dibicarakan, habis posting mau ke mana? beranda atau postingan tsb?
+        '201':
+          description: "sukses menambahkan komentar"
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/ApiDataResponse' 
+              example: 
+                code: 201
+                message: "selamat data berhasil ditambahkan"
+                data:
+                  id: 12
+                  username: "makhlukdarat"
+                  avatar: "uploads/3/makhluk.jpg"
+                  content: "Bisa aje pak, xixixi"
+                  date: "23/03/2024"
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+  /comments/{comment_id}:
+    put: 
+      tags: 
+       - comment
+      summary: Add item to database
+      description: "Endpoint yang digunakan untuk menambahkan komentar sesuai dengan hak akses pada token JWT"
+      parameters: 
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      security: 
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Comment'
+            example: 
+              username: "makhlukdarat"
+              avatar: "uploads/3/makhluk.jpg"
+              content: "Bisa aje pak, xixixixixi"
+
+      responses:
+      # perlu dibicarakan, habis posting mau ke mana? beranda atau postingan tsb?
+        '201':
+          description: "sukses mengubah komentar"
+          content:
+            application/json:
+              schema:
+               $ref: '#/components/schemas/ApiDataResponse' 
+              example: 
+                code: 201
+                message: "selamat data berhasil diubah"
+                data:
+                  id: 12
+                  username: "makhlukdarat"
+                  avatar: "uploads/3/makhluk.jpg"
+                  content: "Bisa aje pak, xixixixixi"
+                  date: "23/03/2024"
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete: 
+      tags:
+        - comment
+      summary: Delete post
+      description: This can only be done by the logged in user who has the comment.
+      parameters: 
+        - name: comment_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: 1
+      operationId: deleteComment
+      security: 
+        - bearerAuth: []
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiDataResponse'
+              example: 
+                code : 200
+                message: "berhasil menghapus data"
+        '400':
+          $ref: '#/components/responses/400'
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+
+    User:
+      type: object
+      required:
+        - username
+        - email
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 20
+        birthday:
+          type: string
+        address:
+          type: string
+        avatar: 
+          type: string
+   
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+         type: string
+         format: email
+        password:
+         type: string
+         format: password
+         minLength: 8
+         maxLength: 20
+        birthday:
+         type: string
+        address:
+          type: string
+        avatar: 
+         type: string
+         format: binary
+   
+    Post:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        avatar: 
+          type: string
+        content:
+          type: string
+        picture:
+          type: string
+        comment_count:
+          type: integer
+        date:
+          type: string
+
+    PostReq:
+      type: object
+      properties:
+        username:
+          type: string
+        avatar: 
+          type: string
+        content:
+          type: string
+        picture:
+          type: string
+          format: binary
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        avatar:
+          type: string
+        content:
+          type: string
+        date:
+          type: string
+
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+   
+    ApiDataResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        data:
+          type: object
+        message:
+          type: string
+   
+    ApiDataArrayResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int8
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+         type: object
+         properties:
+          page:
+           type: integer
+          pagesize:
+            type: integer
+          total_pages:
+            type: integer
+
+
+  requestBodies:
+    User:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/User'
+      required: true
+
+    UserUpdate:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/UserUpdate'
+
+    PostReq:
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/PostReq'
+
+    Comment:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Comment'
+
+    UserArray:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/User'
+      description: List of user object
+      required: true
+  responses:
+    '400':
+      description: "input data kurang tepat"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 400
+            message: "terdapat kesalahan pada data input"
+    '401':
+      description: "akses ditolak"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 401
+            message: "anda tidak bisa mengakses perintah ini"
+    '404':
+      description: "data tidak ditemukan"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 404
+            message: "data tidak ditemukan"
+    '409':
+      description: "data konflik"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 409
+            message: "data yang dimasukkan sudah terdaftar"
+    '500':
+      description: "server error"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example: 
+            code: 500
+            message: "error pada server"
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
