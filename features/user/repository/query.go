@@ -19,8 +19,11 @@ func NewUserQuery(db *gorm.DB) user.UserQuery {
 
 func (uq query) AddUser(newData user.User) error {
 	var input = UserModel{
-		Nama:     newData.Nama,
-		Hp:       newData.Hp,
+		Name:     newData.Name,
+		Email:       newData.Email,
+		Username: newData.Username,
+		Placeofbirth: newData.Placeofbirth,
+		Dateofbirth: newData.Dateofbirth,
 		Password: newData.Password,
 	}
 	err := uq.connection.Create(&input).Error
@@ -42,8 +45,8 @@ func (uq query) Login(hp string) (user.User, error) {
 
 	var result = user.User{
 		ID:       data.ID,
-		Hp:       data.Hp,
-		Nama:     data.Nama,
+		Email:    data.Email,
+		Name:     data.Name,
 		Password: data.Password,
 	}
 	return result, nil
@@ -60,8 +63,8 @@ func (uq query) Profile(id uint) (user.User, error) {
 
 	var result = user.User{
 		ID:       data.ID,
-		Hp:       data.Hp,
-		Nama:     data.Nama,
+		Email:       data.Email,
+		Name:     data.Name,
 		Password: data.Password,
 	}
 	return result, nil

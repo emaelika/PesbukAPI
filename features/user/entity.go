@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
@@ -24,8 +26,12 @@ type UserQuery interface {
 }
 
 type User struct {
-	ID       uint
-	Nama     string `validate:"required"`
-	Hp       string `validate:"required,max=13,min=10"`
-	Password string `validate:"required"`
+	ID       	 uint
+	Name     	 string `validate:"required"`
+	Email        string `validate:"required,email"`
+	Username	 string `validate:"required"`
+	Placeofbirth string `validate:"required"`
+	Dateofbirth  time.Time `validate:"required"`
+	Password 	 string `validate:"required"`
+	Image    	 []byte
 }

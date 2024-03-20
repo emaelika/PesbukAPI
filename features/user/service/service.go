@@ -46,10 +46,10 @@ func (us service) AddUser(data user.User) error {
 	return nil
 }
 
-func (us service) Login(hp string, password string) (user.User, string, error) {
+func (us service) Login(email string, password string) (user.User, string, error) {
 	// validasi
-	var dummyValidate = user.User{Nama: "A",
-		Hp:       hp,
+	var dummyValidate = user.User{Name: "A",
+		Email:       email,
 		Password: password}
 	err := us.v.Struct(&dummyValidate)
 	if err != nil {
@@ -58,7 +58,7 @@ func (us service) Login(hp string, password string) (user.User, string, error) {
 	}
 
 	// ngambil data
-	data, err := us.uq.Login(hp)
+	data, err := us.uq.Login(email)
 	if err != nil {
 		log.Println(err.Error())
 		return user.User{}, "", err

@@ -3,6 +3,7 @@ package handler
 import (
 	"21-api/features/user"
 	"21-api/helper"
+	"time"
 
 	"log"
 	"net/http"
@@ -38,9 +39,27 @@ func (us *controller) Register() echo.HandlerFunc {
 				helper.ResponseFormat(http.StatusBadRequest, "data yang dikirmkan tidak sesuai", nil))
 		}
 
+				// Parse tanggal lahir menjadi tipe time.Time
+		dateOfBirth, err := time.Parse("2006-01-02", input.Dateofbirth)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{
+				"message": "format tanggal lahir tidak valid",
+			})
+		}
+
+		// Validasi tanggal lahir
+		if !dateOfBirth.Before(time.Now()) {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{
+				"message": "tanggal lahir tidak boleh di masa depan",
+			})
+		}
+
 		var processInput user.User
-		processInput.Hp = input.Hp
-		processInput.Nama = input.Nama
+		processInput.Name = input.Name
+		processInput.Email = input.Email
+		processInput.Username = input.Username
+		processInput.Placeofbirth = input.Placeofbirth
+		processInput.Dateofbirth = dateOfBirth
 		processInput.Password = input.Password
 
 		err = us.service.AddUser(processInput) // ini adalah fungsi yang kita buat sendiri
@@ -74,7 +93,7 @@ func (us *controller) Login() echo.HandlerFunc {
 				helper.ResponseFormat(http.StatusBadRequest, "data yang dikirmkan tidak sesuai", nil))
 		}
 
-		result, token, err := us.service.Login(input.Hp, input.Password)
+		result, token, err := us.service.Login(input.Email, input.Password)
 		if err != nil {
 			if strings.Contains(err.Error(), "validasi") {
 				return c.JSON(http.StatusBadRequest,
@@ -93,8 +112,8 @@ func (us *controller) Login() echo.HandlerFunc {
 		}
 
 		var responseData LoginResponse
-		responseData.Hp = result.Hp
-		responseData.Nama = result.Nama
+		responseData.Email = result.Email
+		responseData.Name = result.Name
 		responseData.Token = token
 
 		return c.JSON(http.StatusOK,
@@ -124,8 +143,8 @@ func (us *controller) Profile() echo.HandlerFunc {
 				helper.ResponseFormat(http.StatusInternalServerError, "terjadi kesalahan pada sistem", nil))
 		}
 		var result = ProfilResponse{
-			Nama: data.Nama,
-			Hp:   data.Hp,
+			Email: data.Email,
+			Name:   data.Name,
 		}
 
 		return c.JSON(http.StatusOK,

@@ -1,11 +1,11 @@
 package handler
 
 type LoginResponse struct {
-	Hp    string `json:"hp"`
-	Nama  string `json:"nama"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 	Token string `json:"token"`
 }
 type ProfilResponse struct {
-	Hp   string `json:"hp"`
-	Nama string `json:"nama"`
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
