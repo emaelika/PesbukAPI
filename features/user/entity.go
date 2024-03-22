@@ -49,6 +49,6 @@ type Login struct {
 type Register struct {
 	Fullname     string `form:"fullname"` 
 	Email		 string `form:"email" validate:"required"`
-	Password  	 string `form:"password" validate:"required,alphanum,min=8"`
+	Password  	 string `form:"password" validate:"required,alphanum,min=8,max=20"`
 	Birthday     string `form:"birthday"`
 }

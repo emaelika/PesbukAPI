@@ -3,6 +3,7 @@ package data
 import (
 	"PesbukAPI/features/comment"
 	"errors"
+	"os/user"
 
 	"gorm.io/gorm"
 )
@@ -17,13 +18,14 @@ func New(db *gorm.DB) comment.CommentModel {
 	}
 }
 
-func (cm *model) AddComment(userid uint, komentarBaru string) (comment.Comment, error) {
-	var inputProcess = Comment{Komentar: komentarBaru, UserID: userid}
-	if err := cm.connection.Create(&inputProcess).Error; err != nil {
-		return comment.Comment{}, err
-	}
-	return comment.Comment{Komentar: inputProcess.Komentar},nil
+func (cm *model) AddComment(userid uint, postID uint, komentarBaru string) (comment.Comment, error) {
+    var inputProcess = Comment{PostID: postID, Komentar: komentarBaru, UserID: userid}
+    if err := cm.connection.Create(&inputProcess).Error; err != nil {
+        return comment.Comment{}, err
+    }
+    return comment.Comment{Komentar: inputProcess.Komentar}, nil
 }
+
 
 func (cm *model) UpdateComment(userid uint, commentID uint, data comment.Comment) (comment.Comment, error) {
 	var qry = cm.connection.Where("user_id = ? AND id = ?", userid, commentID).Updates(data)
@@ -55,6 +57,22 @@ func (cm *model) GetCommentByOwner(userid uint) ([]comment.Comment, error) {
 	var result []comment.Comment
 	if err := cm.connection.Where("user_id = ?",userid).Find(&result).Error; err != nil {
 		return nil, err
+	}
+	return result, nil
+}
+
+func (cm *model) GetAllComments() ([]comment.Comment, error) {
+	var result []comment.Comment
+	if err := cm.connection.Find(&result).Error; err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+func (m *model) GetUserByID(id uint) (user.User, error) {
+	var result user.User
+	if err := m.connection.Model(&User{}).Where("id = ?", id).First(&result).Error; err != nil {
+		return user.User{}, err
 	}
 	return result, nil
 }
