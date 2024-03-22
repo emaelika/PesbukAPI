@@ -6,7 +6,6 @@ import (
 	"PesbukAPI/middlewares"
 	"errors"
 	"log"
-	"os/user"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
@@ -107,12 +106,4 @@ func (s *service) GetAllComments() ([]comment.Comment, error) {
 	return comments, nil
 }
 
-func (s *service) Profile(token *jwt.Token) (user.User, error) {
-	decodeId := middlewares.DecodeToken(token)
-	result, err := s.model.GetUserByID(decodeId)
-	if err != nil {
-		return user.User{}, err
-	}
 
-	return result, nil
-}

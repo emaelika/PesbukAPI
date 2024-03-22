@@ -169,3 +169,4 @@ func (ct *controller) ShowAllComments() echo.HandlerFunc {
             helper.ResponseFormat(http.StatusOK, "semua komentar", comments))
     }
 }
+

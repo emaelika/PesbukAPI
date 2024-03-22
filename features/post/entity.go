@@ -1,6 +1,7 @@
 package post
 
 import (
+	"PesbukAPI/features/user"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -38,4 +39,12 @@ type Post struct {
 	Picture     string `json:"picture"`
 	Content 	string `json:"content"`
 	CreatedAt	time.Time `json:"created_at"`
+}
+
+type PostWithUser struct {
+	ID      uint           `json:"id"`
+	UserID  uint           `json:"userid"`
+	Picture string         `json:"picture"`
+	Content string         `json:"content"`
+	UserInfo user.User   `json:"userinfo"` 
 }

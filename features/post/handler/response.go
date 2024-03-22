@@ -5,3 +5,4 @@ type PostResponse struct {
 	Picture string `json:"picture"`
 	Content string `json:"content"`
 }
+

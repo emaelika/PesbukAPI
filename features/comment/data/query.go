@@ -3,7 +3,6 @@ package data
 import (
 	"PesbukAPI/features/comment"
 	"errors"
-	"os/user"
 
 	"gorm.io/gorm"
 )
@@ -69,10 +68,3 @@ func (cm *model) GetAllComments() ([]comment.Comment, error) {
 	return result, nil
 }
 
-func (m *model) GetUserByID(id uint) (user.User, error) {
-	var result user.User
-	if err := m.connection.Model(&User{}).Where("id = ?", id).First(&result).Error; err != nil {
-		return user.User{}, err
-	}
-	return result, nil
-}
