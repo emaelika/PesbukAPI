@@ -12,7 +12,7 @@ import (
 	uh "PesbukAPI/features/user/handler"
 	us "PesbukAPI/features/user/service"
 	"PesbukAPI/routes"
-	"log"
+	cloudnr "PesbukAPI/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -22,13 +22,11 @@ func main() {
 	e := echo.New()            // inisiasi echo
 	cfg := config.InitConfig() // baca seluruh system variable
 	db := config.InitSQL(cfg)  // konek DB
-	err := config.InitDir(cfg)
-	if err != nil {
-		log.Panic("salah dalam inisiasi direktori")
-	}
+
+	cld, ctx, upparam := cloudnr.InitCloudnr(cfg)
 	uq := ur.New(db) // bagian yang menghungkan coding kita ke database / bagian dimana kita ngoding untk ke DB
 	us := us.NewService(uq)
-	uh := uh.NewUserHandler(us)
+	uh := uh.NewUserHandler(us, cld, ctx, upparam)
 
 	cq := cr.New(db) // bagian yang menghungkan coding kita ke database / bagian dimana kita ngoding untk ke DB
 	cs := cs.NewCommentService(cq)
@@ -37,7 +35,7 @@ func main() {
 
 	pq := pr.New(db)
 	ps := ps.NewPostService(pq)
-	ph := ph.NewHandler(ps)
+	ph := ph.NewHandler(ps, cld, ctx, upparam)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
