@@ -2,9 +2,12 @@ package main
 
 import (
 	"PesbukAPI/config"
-	th "PesbukAPI/features/todo/handler"
-	tr "PesbukAPI/features/todo/repository"
-	ts "PesbukAPI/features/todo/service"
+	cr "PesbukAPI/features/comment/data"
+	ch "PesbukAPI/features/comment/handler"
+	cs "PesbukAPI/features/comment/service"
+	pr "PesbukAPI/features/post/data"
+	ph "PesbukAPI/features/post/handler"
+	ps "PesbukAPI/features/post/service"
 	ur "PesbukAPI/features/user/data"
 	uh "PesbukAPI/features/user/handler"
 	us "PesbukAPI/features/user/service"
@@ -23,14 +26,18 @@ func main() {
 	us := us.NewService(uq)
 	uh := uh.NewUserHandler(us)
 
-	tq := tr.NewTodoQuery(db) // bagian yang menghungkan coding kita ke database / bagian dimana kita ngoding untk ke DB
-	ts := ts.NewTodoService(tq)
-	th := th.NewHandler(ts)
+	cq := cr.New(db) // bagian yang menghungkan coding kita ke database / bagian dimana kita ngoding untk ke DB
+	cs := cs.NewCommentService(cq)
+	ch := ch.NewHandler(cs)
 	// bagian yang menghandle segala hal yang berurusan dengan HTTP / echo
+
+	pq := pr.New(db)
+	ps := ps.NewPostService(pq)
+	ph := ph.NewHandler(ps)
 
 	e.Pre(middleware.RemoveTrailingSlash())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS()) // ini aja cukup
-	routes.InitRoute(e, uh, th)
+	routes.InitRoute(e, uh, ph, ch)
 	e.Logger.Fatal(e.Start(":1323"))
 }

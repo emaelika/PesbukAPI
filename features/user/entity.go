@@ -12,14 +12,15 @@ type UserController interface {
 	Update() echo.HandlerFunc
 	Delete() echo.HandlerFunc
 	GetUserByIDParam() echo.HandlerFunc
+	Avatar() echo.HandlerFunc 
 }
 
 type UserService interface {
 	Register(newData User) error
 	Login(loginData User) (User, string, error)
 	Profile(token *jwt.Token) (User, error)
-	Update(token *jwt.Token, idFromParam uint, newData User) (User, error)
-	Delete(token *jwt.Token, id uint) error
+	Update(token *jwt.Token, newData User) (User, error)
+	Delete(token *jwt.Token) error
 	GetUserByIDParam(token *jwt.Token, idFromParam uint) (User, error)
 }
 
@@ -29,30 +30,25 @@ type UserModel interface {
 	GetUserByID(id uint) (User, error)
 	Update(id uint, newData User) (User, error)
 	Delete(id uint) error
-	GetUserByIDE(id uint) (User, error)
 }
 
 type User struct {
-	ID	         uint
-	Name		 string `form:"name"`
-	Email 	     string `form:"email"`
-	Username 	 string `form:"username"`
-	Placeofbirth string `form:"placeofbirth"`
-	Dateofbirth  string `form:"dateofbirth"`
-	Password 	 string `form:"password"`
-	Image		 []byte `gorm:"type:longblob"`
+	ID	         uint	`json:"id"`
+	Fullname	 string `json:"fullname" form:"fullname"`
+	Email 	     string `json:"email" form:"email"`
+	Password 	 string `json:"password" form:"password"`
+	Birthday     string `json:"birthday" form:"birthday"`
+	Avatar		 string `json:"avatar" form:"avatar"`
 }
 
 type Login struct {
-	Email 		string `validate:"required"`
-	Password 	string `validate:"required,alphanum,min=8"`
+	Email 		string `form:"email" validate:"required"`
+	Password 	string `form:"password" validate:"required,alphanum,min=8"`
 }
 
 type Register struct {
-	Name 		 string `form:"name"` 
+	Fullname     string `form:"fullname"` 
 	Email		 string `form:"email" validate:"required"`
-	Username	 string `form:"username"`
-	Placeofbirth string `form:"placeofbirth"`
-	Dateofbirth  string `form:"dateofbirth"`
 	Password  	 string `form:"password" validate:"required,alphanum,min=8"`
+	Birthday     string `form:"birthday"`
 }

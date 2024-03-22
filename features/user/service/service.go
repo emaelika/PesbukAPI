@@ -27,12 +27,10 @@ func NewService(m user.UserModel) user.UserService {
 
 func (s *service) Register(newData user.User) error {
 	var registerValidate user.Register
-    registerValidate.Name = newData.Name
+    registerValidate.Fullname = newData.Fullname
     registerValidate.Email = newData.Email
-	registerValidate.Username = newData.Username
-    registerValidate.Placeofbirth = newData.Placeofbirth
-    registerValidate.Dateofbirth = newData.Dateofbirth
 	registerValidate.Password = newData.Password
+    registerValidate.Birthday = newData.Birthday
 	err := s.v.Struct(&registerValidate)
 	if err != nil {
 		log.Println("error validasi", err.Error())
@@ -89,36 +87,20 @@ func (s *service) Profile(token *jwt.Token) (user.User, error) {
 	return result, nil
 }
 
-func (s *service) Update(token *jwt.Token, idFromParam uint, newData user.User) (user.User, error) {
+func (s *service) Update(token *jwt.Token, newData user.User) (user.User, error) {
     decodedID := middlewares.DecodeToken(token)
-
-    if idFromParam != decodedID {
-        return user.User{}, errors.New("you can only update your own account")
-    }
 
     existingUser, err := s.model.GetUserByID(decodedID)
     if err != nil {
         return user.User{}, errors.New("user not found")
     }
 
-    if newData.Name != "" {
-        existingUser.Name = newData.Name
+    if newData.Fullname != "" {
+        existingUser.Fullname = newData.Fullname
     }
 
     if newData.Email != "" {
         existingUser.Email = newData.Email
-    }
-
-    if newData.Username != "" {
-        existingUser.Username = newData.Username
-    }
-
-    if newData.Placeofbirth != "" {
-        existingUser.Placeofbirth = newData.Placeofbirth
-    }
-
-    if newData.Dateofbirth != "" {
-        existingUser.Dateofbirth = newData.Dateofbirth
     }
 
     if newData.Password != "" {
@@ -129,8 +111,12 @@ func (s *service) Update(token *jwt.Token, idFromParam uint, newData user.User) 
         existingUser.Password = newPassword
     }
 
-    if len(newData.Image) > 0 {
-        existingUser.Image = newData.Image
+    if newData.Birthday != "" {
+        existingUser.Birthday = newData.Birthday
+    }
+
+    if newData.Avatar != "" {
+        existingUser.Avatar = newData.Avatar
     }
 
     result, err := s.model.Update(decodedID, existingUser)
@@ -142,23 +128,14 @@ func (s *service) Update(token *jwt.Token, idFromParam uint, newData user.User) 
 }
 
 
-func (s *service) Delete(token *jwt.Token, id uint) error {
+func (s *service) Delete(token *jwt.Token) error {
     decodedID := middlewares.DecodeToken(token)
     if decodedID == 0 {
         log.Println("error decode token:", "token tidak ditemukan")
         return errors.New("data tidak valid")
     }
 
-    userFromToken, err := s.model.GetUserByID(decodedID)
-    if err != nil {
-        return err
-    }
-
-    if userFromToken.ID != id {
-        return errors.New("Anda hanya dapat menghapus akun Anda sendiri")
-    }
-
-    err = s.model.Delete(id)
+    err := s.model.Delete(decodedID)
     if err != nil {
         return errors.New(helper.CannotDelete)
     }
@@ -173,10 +150,11 @@ func (s *service) GetUserByIDParam(token *jwt.Token, idFromParam uint) (user.Use
         return user.User{}, errors.New("you can only view your own account")
     }
 
-    result, err := s.model.GetUserByIDE(decodedID)
+    result, err := s.model.GetUserByID(decodedID)
     if err != nil {
         return user.User{}, err
     }
 
     return result, nil
 }
+

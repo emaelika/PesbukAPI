@@ -1,17 +1,17 @@
 package data
 
 import (
-	"PesbukAPI/features/todo/repository"
+	comment "PesbukAPI/features/comment/data"
+	post "PesbukAPI/features/post/data"
 )
 
 type User struct {
 	ID 			 uint 					`gorm:"primary_key;auto_increment"`
-	Name     	 string                 `validate:"required"`
+	Fullname     string                 `validate:"required"`
 	Email        string                 `gorm:"unique"`
-	Username 	 string                 `validate:"required"`
-	Placeofbirth string
-	Dateofbirth  string
 	Password	 string
-	Image		 []byte 				`gorm:"type:longblob"`
-	Posts    	 []repository.TodoModel `gorm:"foreignKey:UserID"`
+	Birthday  	 string
+	Avatar		 string
+	Posts	 	 []post.Post			`gorm:"foreignKey:UserID"`
+	Comments	 []comment.Comment		`gorm:"foreignKey:UserID"`
 }

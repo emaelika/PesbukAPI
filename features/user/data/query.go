@@ -1,11 +1,10 @@
 package data
 
 import (
+	"PesbukAPI/features/comment"
+	"PesbukAPI/features/post"
 	"PesbukAPI/features/user"
-	"bytes"
 	"errors"
-	"image"
-	"image/jpeg"
 	_ "image/png"
 
 	"gorm.io/gorm"
@@ -29,17 +28,9 @@ func (m *model) AddUser(newData user.User) error {
 	return nil
 }
 
-func (m *model) CekUser(username string) bool {
-	var data User
-	if err := m.connection.Where("username = ?", username).First(&data).Error; err != nil {
-		return false
-	}
-	return true
-}
-
-func (m *model) Login(username string) (user.User, error) {
+func (m *model) Login(email string) (user.User, error) {
 	var result user.User
-	if err := m.connection.Where("username = ? ", username).First(&result).Error; err != nil {
+	if err := m.connection.Where("email = ? ", email).First(&result).Error; err != nil {
 		return user.User{}, err
 	}
 	return result, nil
@@ -54,7 +45,12 @@ func (m *model) GetUserByID(id uint) (user.User, error) {
 }
 
 func (m *model) Delete(id uint) error {
-    result := m.connection.Delete(&User{}, id)
+    result := m.connection.Where("user_id = ?", id).Delete(&post.Post{}, &comment.Comment{})
+    if result.Error != nil {
+        return result.Error
+    }
+
+    result = m.connection.Delete(&User{}, id)
     if result.Error != nil {
         return result.Error
     }
@@ -72,8 +68,8 @@ func (m *model) Update(id uint, newData user.User) (user.User, error) {
 
     tx := m.connection.Begin()
 
-    if newData.Name != "" {
-        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("name", newData.Name).Error; err != nil {
+    if newData.Fullname != "" {
+        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("fullname", newData.Fullname).Error; err != nil {
             tx.Rollback()
             return user.User{}, err
         }
@@ -85,28 +81,7 @@ func (m *model) Update(id uint, newData user.User) (user.User, error) {
             return user.User{}, err
         }
     }
-
-    if newData.Username != "" {
-        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("username", newData.Username).Error; err != nil {
-            tx.Rollback()
-            return user.User{}, err
-        }
-    }
     
-    if newData.Placeofbirth != "" {
-        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("placeofbirth", newData.Placeofbirth).Error; err != nil {
-            tx.Rollback()
-            return user.User{}, err
-        }
-    }
-
-    if newData.Dateofbirth != "" {
-        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("dateofbirth", newData.Dateofbirth).Error; err != nil {
-            tx.Rollback()
-            return user.User{}, err
-        }
-    }
-
     if newData.Password != "" {
         if err := tx.Model(&user.User{}).Where("id = ?", id).Update("password", newData.Password).Error; err != nil {
             tx.Rollback()
@@ -114,8 +89,15 @@ func (m *model) Update(id uint, newData user.User) (user.User, error) {
         }
     }
 
-    if len(newData.Image) > 0 {
-        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("image", newData.Image).Error; err != nil {
+    if newData.Birthday != "" {
+        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("birthday", newData.Birthday).Error; err != nil {
+            tx.Rollback()
+            return user.User{}, err
+        }
+    }
+
+    if newData.Avatar != "" {
+        if err := tx.Model(&user.User{}).Where("id = ?", id).Update("avatar", newData.Avatar).Error; err != nil {
             tx.Rollback()
             return user.User{}, err
         }
@@ -132,26 +114,4 @@ func (m *model) Update(id uint, newData user.User) (user.User, error) {
     }
 
     return updatedUser, nil
-}
-
-func (m *model) GetUserByIDE(id uint) (user.User, error) {
-    var result user.User
-    if err := m.connection.Model(&User{}).Where("id = ?", id).First(&result).Error; err != nil {
-        return user.User{}, err
-    }
-
-    // Konversi data gambar ke format PNG
-    img, _, err := image.Decode(bytes.NewReader(result.Image))
-    if err != nil {
-        return user.User{}, err
-    }
-
-    var buf bytes.Buffer
-    if err := jpeg.Encode(&buf, img, nil); err != nil {
-        return user.User{}, err
-    }
-
-    result.Image = buf.Bytes() // Mengganti data gambar dengan data JPEG yang baru
-
-    return result, nil
 }

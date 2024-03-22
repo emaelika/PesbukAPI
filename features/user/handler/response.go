@@ -1,7 +1,7 @@
 package handler
 
 type LoginResponse struct {
-	ID    uint   `json:"id"`
-	Email string `json:"username"`
-	Token string `json:"token"`
+	Fullname string `json:"fullname"`
+	Token    string `json:"token"`
+	Avatar   string `json:"avatar"`
 }
