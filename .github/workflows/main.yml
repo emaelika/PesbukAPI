@@ -41,4 +41,4 @@ jobs:
             sudo docker stop ${{ secrets.CONTAINER_NAME }}
             sudo docker rm ${{ secrets.CONTAINER_NAME }}
             sudo docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.IMAGE_NAME }}
-            sudo docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 1323:1323 --link mysqlku -e DBHost=${{ secrets.DBHOST }} -e DBUsername=${{ secrets.DBUSER }}  -e DBPort=${{ secrets.DBPORT }} -e JWTSECRET=${{ secrets.JWTSECRET }} -e DBName=${{ secrets.DBNAME }}   ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.IMAGE_NAME }}
+            sudo docker run --name ${{ secrets.CONTAINER_NAME }} -d -p 1323:1323 --link mysqlku -e DBHost=${{ secrets.DBHOST }} -e DBUsername=${{ secrets.DBUSER }} -e CLOUDINARY_CLD=${{ secrets.CLOUDINARY_CLD }} -e CLOUDINARY_KEY=${{ secrets.CLOUDINARY_KEY }} -e CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }} -e CLOUDINARY_FOLDER=${{ secrets.CLOUDINARY_FOLDER }} - -e DBPort=${{ secrets.DBPORT }} -e JWTSECRET=${{ secrets.JWTSECRET }} -e DBName=${{ secrets.DBNAME }}   ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.IMAGE_NAME }}
