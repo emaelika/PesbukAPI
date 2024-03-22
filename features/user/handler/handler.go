@@ -3,10 +3,9 @@ package handler
 import (
 	"PesbukAPI/features/user"
 	"PesbukAPI/helper"
-	"PesbukAPI/middlewares"
+	"context"
 	"database/sql"
 	"errors"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -14,19 +13,26 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
+	cloudnr "PesbukAPI/utils"
 
+	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 type controller struct {
 	service user.UserService
+	cl      *cloudinary.Cloudinary
+	ct      context.Context
+	up      string
 }
 
-func NewUserHandler(s user.UserService) user.UserController {
+func NewUserHandler(s user.UserService, cld *cloudinary.Cloudinary, ctx context.Context, uploadparam string) user.UserController {
 	return &controller{
 		service: s,
+		cl:      cld,
+		ct:      ctx,
+		up:      uploadparam,
 	}
 }
 
@@ -124,23 +130,10 @@ func (ct *controller) Profile() echo.HandlerFunc {
 func (ct *controller) Update() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		// Mendapatkan token dari konteks
-		token, ok := c.Get("user").(*jwt.Token)
-		if !ok {
-			return c.JSON(http.StatusNotFound,
-				helper.ResponseFormat(http.StatusNotFound, "data tidak ditemukan", nil))
-		}
 
 		// Mendapatkan ID pengguna dari token JWT
-		decodedID := middlewares.DecodeToken(token)
 
-		token = c.Get("user").(*jwt.Token)
-
-		existingUser, err := ct.service.GetUserByIDParam(token, uint(decodedID))
-		if err != nil {
-			log.Println("error getting user:", err.Error())
-			return c.JSON(http.StatusInternalServerError,
-				helper.ResponseFormat(http.StatusInternalServerError, "error pada server", nil))
-		}
+		token := c.Get("user").(*jwt.Token)
 
 		// Mendapatkan data yang akan diperbarui dari body permintaan
 		var inputData user.User
@@ -171,44 +164,38 @@ func (ct *controller) Update() echo.HandlerFunc {
 
 		// If avatar is provided, save it and update inputData
 		if avatar != nil {
-			if existingUser.Avatar != "" {
-				if err := os.Remove("image/avatar/" + existingUser.Avatar); err != nil {
-					log.Println("error deleting old avatar:", err.Error())
-					// Anda bisa memilih untuk mengabaikan kesalahan penghapusan
-					// atau mengembalikan kesalahan jika penghapusan gagal
+			// cldnr
+			formFile, err := avatar.Open()
+			if err != nil {
+				return c.JSON(
+					http.StatusInternalServerError, map[string]any{
+						"message": "formfile error",
+					})
+			}
+
+			link, err := cloudnr.UploadImage(ct.cl, ct.ct, formFile, ct.up)
+			if err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					return c.JSON(http.StatusBadRequest, map[string]any{
+						"message": "harap pilih gambar",
+						"data":    nil,
+					})
+				} else {
+					return c.JSON(http.StatusInternalServerError, map[string]any{
+						"message": "kesalahan pada server",
+						"data":    nil,
+					})
 				}
 			}
 
+			// old
+
 			// Generate a unique filename
-			filename := uuid.New().String() + filepath.Ext(avatar.Filename)
-			// Open the uploaded file
-			src, err := avatar.Open()
-			if err != nil {
-				log.Println("error opening uploaded file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, "error pada server", nil))
-			}
-			defer src.Close()
-			dir := "uploads/avatars"
-
-			// Create the destination file
-			dst, err := os.Create(dir + "/" + filename)
-			if err != nil {
-				log.Println("error creating destination file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, "error pada server", nil))
-			}
-			defer dst.Close()
-
-			// Copy the file
-			if _, err := io.Copy(dst, src); err != nil {
-				log.Println("error copying file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, "error pada server", nil))
-			}
 
 			// Update the avatar path in inputData
-			inputData.Avatar = dir + "/" + filename
+			inputData.Avatar = link
+		} else {
+			inputData.Avatar = ""
 		}
 
 		// Memanggil service untuk melakukan pembaruan data pengguna

@@ -3,24 +3,31 @@ package handler
 import (
 	"PesbukAPI/features/post"
 	"PesbukAPI/helper"
-	"io"
+	cloudnr "PesbukAPI/utils"
+	"context"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
+	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 type controller struct {
-	s post.PostService
+	s  post.PostService
+	cl *cloudinary.Cloudinary
+	ct context.Context
+	up string
 }
 
-func NewHandler(service post.PostService) post.PostController {
+func NewHandler(service post.PostService, cld *cloudinary.Cloudinary, ctx context.Context, uploadparam string) post.PostController {
 	return &controller{
-		s: service,
+		s:  service,
+		cl: cld,
+		ct: ctx,
+		up: uploadparam,
 	}
 }
 
@@ -44,35 +51,45 @@ func (ct *controller) Add() echo.HandlerFunc {
 		}
 
 		// Jika ada gambar yang diunggah, simpan gambar dan dapatkan path file
-		var picturePath string
 		if file != nil {
-			// Buka file yang diunggah
-			src, err := file.Open()
-			if err != nil {
-				log.Println("error opening uploaded file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-			}
-			defer src.Close()
-			dir := "uploads/pictures"
-			// Simpan file ke dalam direktori upload
-			dst, err := os.Create(dir + "/" + file.Filename)
-			if err != nil {
-				log.Println("error creating destination file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-			}
-			defer dst.Close()
-
-			// Salin konten file ke dalam file tujuan
-			if _, err := io.Copy(dst, src); err != nil {
-				log.Println("error copying file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
+			token, ok := c.Get("user").(*jwt.Token)
+			if !ok {
+				return c.JSON(http.StatusBadRequest,
+					helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
 			}
 
-			// Tentukan path file untuk digunakan dalam entitas Post
-			picturePath = dir + "/" + file.Filename
+			formFile, err := file.Open()
+			if err != nil {
+				return c.JSON(
+					http.StatusInternalServerError, map[string]any{
+						"message": "formfile error",
+					})
+			}
+
+			link, err := cloudnr.UploadImage(ct.cl, ct.ct, formFile, ct.up)
+			if err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					return c.JSON(http.StatusBadRequest, map[string]any{
+						"message": "harap pilih gambar",
+						"data":    nil,
+					})
+				} else {
+					return c.JSON(http.StatusInternalServerError, map[string]any{
+						"message": "kesalahan pada server",
+						"data":    nil,
+					})
+				}
+			}
+
+			newPost, err := ct.s.AddPost(token, link, content)
+			if err != nil {
+				log.Println("error insert db:", err.Error())
+				return c.JSON(http.StatusInternalServerError,
+					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
+			}
+
+			return c.JSON(http.StatusCreated,
+				helper.ResponseFormat(http.StatusCreated, "berhasil menambahkan postingan", newPost))
 		}
 
 		// Lanjutkan dengan fungsi AddPost
@@ -82,7 +99,7 @@ func (ct *controller) Add() echo.HandlerFunc {
 				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
 		}
 
-		newPost, err := ct.s.AddPost(token, picturePath, content)
+		newPost, err := ct.s.AddPost(token, "", content)
 		if err != nil {
 			log.Println("error insert db:", err.Error())
 			return c.JSON(http.StatusInternalServerError,
@@ -128,39 +145,50 @@ func (ct *controller) Update() echo.HandlerFunc {
 			return c.JSON(http.StatusBadRequest,
 				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
 		}
+		if file != nil {
+
+			formFile, err := file.Open()
+			if err != nil {
+				return c.JSON(
+					http.StatusInternalServerError, map[string]any{
+						"message": "formfile error",
+					})
+			}
+
+			link, err := cloudnr.UploadImage(ct.cl, ct.ct, formFile, ct.up)
+			if err != nil {
+				if strings.Contains(err.Error(), "not found") {
+					return c.JSON(http.StatusBadRequest, map[string]any{
+						"message": "harap pilih gambar",
+						"data":    nil,
+					})
+				} else {
+					return c.JSON(http.StatusInternalServerError, map[string]any{
+						"message": "kesalahan pada server",
+						"data":    nil,
+					})
+				}
+			}
+			updatedPost, err := ct.s.UpdatePost(token, uint(id), post.Post{
+				Picture: link,
+				Content: input.Content,
+			})
+			if err != nil {
+				log.Println("error update post:", err.Error())
+				return c.JSON(http.StatusInternalServerError,
+					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
+			}
+
+			return c.JSON(http.StatusOK,
+				helper.ResponseFormat(http.StatusOK, "postingan berhasil diperbarui", updatedPost))
+		}
 
 		// Jika ada file gambar baru, simpan file tersebut dan dapatkan path file baru
-		var picturePath string
-		if file != nil {
-			src, err := file.Open()
-			if err != nil {
-				log.Println("error opening uploaded file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-			}
-			defer src.Close()
-			dir := "uploads/pictures"
-			dst, err := os.Create(dir + "/" + file.Filename)
-			if err != nil {
-				log.Println("error creating destination file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-			}
-			defer dst.Close()
-
-			if _, err := io.Copy(dst, src); err != nil {
-				log.Println("error copying file:", err.Error())
-				return c.JSON(http.StatusInternalServerError,
-					helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-			}
-
-			// Tentukan path file untuk digunakan dalam pembaruan entitas Post
-			picturePath = (dir + "/" + file.Filename)
-		}
+		// upload file
 
 		// Panggil service untuk melakukan pembaruan
 		updatedPost, err := ct.s.UpdatePost(token, uint(id), post.Post{
-			Picture: picturePath,
+			Picture: "",
 			Content: input.Content,
 		})
 		if err != nil {
