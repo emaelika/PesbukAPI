@@ -15,7 +15,7 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.POST("/login", ctl.Login())
 	c.GET("/users", ctl.Profile(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
-	})) 
+	}))
 	c.PUT("/user", ctl.Update(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
@@ -28,8 +28,6 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.GET("/avatar", ctl.Avatar(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-
-
 
 	c.POST("/posts", pc.Add(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
@@ -44,11 +42,6 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.DELETE("/posts/:id", pc.Delete(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-
-
-
-
-
 
 	c.POST("/comments", cc.Add(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
