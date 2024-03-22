@@ -6,6 +6,7 @@ import (
 	"PesbukAPI/middlewares"
 	"errors"
 	"log"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
@@ -82,13 +83,32 @@ func (s *service) DeletePost(userid *jwt.Token, postID uint) error {
         return errors.New("data tidak valid")
     }
 
-    err := s.m.DeletePost(postID)
+    // Panggil metode GetPostByID untuk mendapatkan path file gambar yang akan dihapus
+    post, err := s.m.GetPostByID(postID)
+    if err != nil {
+        return errors.New(helper.ServerGeneralError)
+    }
+
+    // Hapus file gambar dari sistem file jika ada
+    if post != nil && post.Picture != "" {
+        err := os.Remove("image/picture/" + post.Picture)
+        if err != nil {
+            log.Println("error deleting picture file:", err.Error())
+            // Tidak mengembalikan kesalahan karena ini bukan kesalahan utama
+        }
+    }
+
+    // Panggil metode DeletePost pada model untuk menghapus entitas postingan
+    err = s.m.DeletePost(postID)
     if err != nil {
         return errors.New(helper.ServerGeneralError)
     }
 
     return nil
 }
+
+
+
 
 
 func (s *service) GetAllPosts() ([]post.Post, error) {
@@ -108,4 +128,5 @@ func (s *service) GetPostByID(postID uint) (*post.Post, error) {
     }
     return post, nil
 }
+
 

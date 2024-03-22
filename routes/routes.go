@@ -36,7 +36,7 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	}))
 	c.GET("/posts", pc.ShowAllPosts())
 
-	c.GET("/posts:id", pc.ShowPostByID())
+	c.GET("/posts/:id", pc.ShowPostByID())
 
 	c.PUT("/posts/:id", pc.Update(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
