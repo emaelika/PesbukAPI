@@ -10,22 +10,28 @@ type CommentController interface {
 	Update() echo.HandlerFunc
 	Delete() echo.HandlerFunc
 	ShowMyComments() echo.HandlerFunc
+	ShowAllComments() echo.HandlerFunc
 }
 
 type CommentModel interface {
-	AddComment(userid uint, komentarBaru string) (Comment, error)
+	AddComment(userid uint, postID uint, contentBaru string) (Comment, error)
 	UpdateComment(userid uint, commentID uint, data Comment) (Comment, error)
 	DeleteComment(userid uint, commentID uint) error
 	GetCommentByOwner(userid uint) ([]Comment, error)
+	GetAllComments() ([]Comment, error)
 }
 
 type CommentService interface {
-	AddComment(userid *jwt.Token, komentarBaru string) (Comment, error)
+	AddComment(userid *jwt.Token, postID uint, contentBaru string) (Comment, error)
 	UpdateComment(userid *jwt.Token, commentID uint, data Comment) (Comment, error)
 	DeleteComment(userid *jwt.Token, commentID uint) error
 	GetCommentByOwner(userid *jwt.Token) ([]Comment, error)
+	GetAllComments() ([]Comment, error)
 }
 
 type Comment struct {
-	Komentar string
+	ID uint `json:"id"`
+	UserID uint `json:"user_id"`
+	PostID uint `json:"post_id"`
+	Content string `json:"content"`
 }

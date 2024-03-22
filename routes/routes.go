@@ -15,7 +15,7 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.POST("/login", ctl.Login())
 	c.GET("/users", ctl.Profile(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
-	}))
+	})) 
 	c.PUT("/users", ctl.Update(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
@@ -28,6 +28,8 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.GET("/avatar", ctl.Avatar(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
+
+
 
 	c.POST("/posts", pc.Add(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
@@ -43,16 +45,21 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 		SigningKey: []byte(config.JWTSECRET),
 	}))
 
-	c.POST("/comments", cc.Add(), echojwt.WithConfig(echojwt.Config{
+
+
+
+
+
+	c.POST("/posts/:post_id/comments", cc.Add(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-	c.GET("/comments", cc.ShowMyComments(), echojwt.WithConfig(echojwt.Config{
+	
+	c.GET("/comments", cc.ShowAllComments())
+	
+	c.DELETE("/comments/:comments_id", cc.Delete(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-	c.DELETE("/comments/:id", cc.Delete(), echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte(config.JWTSECRET),
-	}))
-	c.PUT("/comments/:id", cc.Update(), echojwt.WithConfig(echojwt.Config{
+	c.PUT("/comments/:comments_id", cc.Update(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
 }
