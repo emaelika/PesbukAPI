@@ -30,7 +30,7 @@ func (ct *controller) Add() echo.HandlerFunc {
 			log.Println("error bind data:", err.Error())
 			if strings.Contains(err.Error(), "unsupport") {
 				return c.JSON(http.StatusUnsupportedMediaType,
-				helper.ResponseFormat(http.StatusUnsupportedMediaType, helper.UserInputFormatError, nil))
+					helper.ResponseFormat(http.StatusUnsupportedMediaType, helper.UserInputFormatError, nil))
 			}
 			return c.JSON(http.StatusBadRequest,
 				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
@@ -48,101 +48,110 @@ func (ct *controller) Add() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError,
 				helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
 		}
-
+		var output = CommentResponse{
+			ID:        newComment.ID,
+			Fullname:  newComment.Fullname,
+			Avatar:    newComment.Avatar,
+			CreatedAt: newComment.CreatedAt,
+			Komentar:  newComment.Komentar,
+		}
 		return c.JSON(http.StatusCreated,
-			helper.ResponseFormat(http.StatusCreated, "berhasil menambahkan komentar", newComment))
+			helper.ResponseFormat(http.StatusCreated, "berhasil menambahkan komentar", output))
 	}
 }
 
 func (ct *controller) Update() echo.HandlerFunc {
-    return func(c echo.Context) error {
-        idStr := c.Param("id")
-        id, err := strconv.ParseUint(idStr, 10, 64)
-        if err != nil {
-            log.Println("error parsing ID:", err.Error())
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+	return func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			log.Println("error parsing ID:", err.Error())
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        var input CommentRequest
-        if err := c.Bind(&input); err != nil {
-            log.Println("error bind data:", err.Error())
-            if strings.Contains(err.Error(), "unsupported") {
-                return c.JSON(http.StatusUnsupportedMediaType,
-                    helper.ResponseFormat(http.StatusUnsupportedMediaType, helper.UserInputFormatError, nil))
-            }
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+		var input CommentRequest
+		if err := c.Bind(&input); err != nil {
+			log.Println("error bind data:", err.Error())
+			if strings.Contains(err.Error(), "unsupported") {
+				return c.JSON(http.StatusUnsupportedMediaType,
+					helper.ResponseFormat(http.StatusUnsupportedMediaType, helper.UserInputFormatError, nil))
+			}
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        token, ok := c.Get("user").(*jwt.Token)
-        if !ok {
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+		token, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        updatedComment, err := ct.s.UpdateComment(token, uint(id), comment.Comment{
-            Komentar:     input.Komentar,
-        })
-        if err != nil {
-            log.Println("gagal update komentar:", err.Error())
-            return c.JSON(http.StatusInternalServerError,
-                helper.ResponseFormat(http.StatusForbidden, helper.CannotUpdate, nil))
-        }
-
-        return c.JSON(http.StatusOK,
-            helper.ResponseFormat(http.StatusOK, "komentar berhasil diperbarui", updatedComment))
-    }
+		updatedComment, err := ct.s.UpdateComment(token, uint(id), comment.Comment{
+			Komentar: input.Komentar,
+		})
+		if err != nil {
+			log.Println("gagal update komentar:", err.Error())
+			return c.JSON(http.StatusInternalServerError,
+				helper.ResponseFormat(http.StatusForbidden, helper.CannotUpdate, nil))
+		}
+		var output = CommentResponse{
+			ID:        updatedComment.ID,
+			Fullname:  updatedComment.Fullname,
+			Avatar:    updatedComment.Avatar,
+			CreatedAt: updatedComment.CreatedAt,
+			Komentar:  updatedComment.Komentar,
+		}
+		return c.JSON(http.StatusOK,
+			helper.ResponseFormat(http.StatusOK, "komentar berhasil diperbarui", output))
+	}
 }
 
 func (ct *controller) Delete() echo.HandlerFunc {
-    return func(c echo.Context) error {
-        idStr := c.Param("id")
-        id, err := strconv.ParseUint(idStr, 10, 64)
-        if err != nil {
-            log.Println("error parsing ID:", err.Error())
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+	return func(c echo.Context) error {
+		idStr := c.Param("id")
+		id, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			log.Println("error parsing ID:", err.Error())
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        token, ok := c.Get("user").(*jwt.Token)
-        if !ok {
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+		token, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        err = ct.s.DeleteComment(token, uint(id))
-        if err != nil {
-            log.Println("gagal menghapus komentar:", err.Error())
-            return c.JSON(http.StatusInternalServerError,
-                helper.ResponseFormat(http.StatusForbidden, helper.CannotDelete, nil))
-        }
+		err = ct.s.DeleteComment(token, uint(id))
+		if err != nil {
+			log.Println("gagal menghapus komentar:", err.Error())
+			return c.JSON(http.StatusInternalServerError,
+				helper.ResponseFormat(http.StatusForbidden, helper.CannotDelete, nil))
+		}
 
-        return c.JSON(http.StatusOK,
-            helper.ResponseFormat(http.StatusOK, "komentar berhasil dihapus", nil))
-    }
+		return c.JSON(http.StatusOK,
+			helper.ResponseFormat(http.StatusOK, "komentar berhasil dihapus", nil))
+	}
 }
 
-
-
-
 func (ct *controller) ShowMyComments() echo.HandlerFunc {
-    return func(c echo.Context) error {
+	return func(c echo.Context) error {
 
-        token, ok := c.Get("user").(*jwt.Token)
-        if !ok {
-            return c.JSON(http.StatusBadRequest,
-                helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
-        }
+		token, ok := c.Get("user").(*jwt.Token)
+		if !ok {
+			return c.JSON(http.StatusBadRequest,
+				helper.ResponseFormat(http.StatusBadRequest, helper.UserInputError, nil))
+		}
 
-        comment, err := ct.s.GetCommentByOwner(token)
-        if err != nil {
-            log.Println("gagal mendapat komentar user:", err.Error())
-            return c.JSON(http.StatusInternalServerError,
-                helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
-        }
+		comment, err := ct.s.GetCommentByOwner(token)
+		if err != nil {
+			log.Println("gagal mendapat komentar user:", err.Error())
+			return c.JSON(http.StatusInternalServerError,
+				helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
+		}
 
-        return c.JSON(http.StatusOK,
-            helper.ResponseFormat(http.StatusOK, "komentar pengguna", comment))
-    }
+		return c.JSON(http.StatusOK,
+			helper.ResponseFormat(http.StatusOK, "komentar pengguna", comment))
+	}
 }

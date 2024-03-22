@@ -3,6 +3,7 @@ package data
 import (
 	"PesbukAPI/features/comment"
 	"errors"
+	"log"
 
 	"gorm.io/gorm"
 )
@@ -22,7 +23,13 @@ func (cm *model) AddComment(userid uint, komentarBaru string) (comment.Comment, 
 	if err := cm.connection.Create(&inputProcess).Error; err != nil {
 		return comment.Comment{}, err
 	}
-	return comment.Comment{Komentar: inputProcess.Komentar},nil
+	var user User
+	if err := cm.connection.Where("id = ?", userid).First(&user).Error; err != nil {
+		log.Println("error repo", err.Error())
+		return comment.Comment{}, err
+	}
+	time := inputProcess.CreatedAt.String()
+	return comment.Comment{Komentar: inputProcess.Komentar, ID: inputProcess.ID, Fullname: user.Fullname, Avatar: user.Avatar, CreatedAt: time}, nil
 }
 
 func (cm *model) UpdateComment(userid uint, commentID uint, data comment.Comment) (comment.Comment, error) {
@@ -34,26 +41,38 @@ func (cm *model) UpdateComment(userid uint, commentID uint, data comment.Comment
 	if qry.RowsAffected < 1 {
 		return comment.Comment{}, errors.New("no data affected")
 	}
-
+	var user User
+	if err := cm.connection.Model(&User{}).Where("id = ?", userid).First(&user).Error; err != nil {
+		log.Println("error repo", err.Error())
+		return comment.Comment{}, err
+	}
+	var komen Comment
+	if err := cm.connection.Where(" id = ?", commentID).Find(&komen).Error; err != nil {
+		return comment.Comment{}, err
+	}
+	data.Avatar = user.Avatar
+	data.Fullname = user.Fullname
+	data.ID = commentID
+	data.CreatedAt = komen.CreatedAt.String()
 	return data, nil
 }
 
 func (cm *model) DeleteComment(userid uint, commentID uint) error {
-    result := cm.connection.Unscoped().Where("user_id = ? AND id = ?", userid, commentID).Delete(&Comment{}) // Menambahkan kondisi untuk pemilik dan ID buku
-    if result.Error != nil {
-        return result.Error
-    }
+	result := cm.connection.Unscoped().Where("user_id = ? AND id = ?", userid, commentID).Delete(&Comment{}) // Menambahkan kondisi untuk pemilik dan ID buku
+	if result.Error != nil {
+		return result.Error
+	}
 
-    if result.RowsAffected == 0 {
-        return errors.New("no data affected")
-    }
+	if result.RowsAffected == 0 {
+		return errors.New("no data affected")
+	}
 
-    return nil
+	return nil
 }
 
 func (cm *model) GetCommentByOwner(userid uint) ([]comment.Comment, error) {
 	var result []comment.Comment
-	if err := cm.connection.Where("user_id = ?",userid).Find(&result).Error; err != nil {
+	if err := cm.connection.Where("user_id = ?", userid).Find(&result).Error; err != nil {
 		return nil, err
 	}
 	return result, nil

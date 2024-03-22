@@ -27,5 +27,10 @@ type CommentService interface {
 }
 
 type Comment struct {
-	Komentar string
+	Komentar  string
+	ID        uint
+	PostId    uint
+	Fullname  string
+	Avatar    string
+	CreatedAt string
 }
