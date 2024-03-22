@@ -16,13 +16,13 @@ func InitRoute(c *echo.Echo, ctl user.UserController, pc post.PostController, cc
 	c.GET("/users", ctl.Profile(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	})) 
-	c.PUT("/user", ctl.Update(), echojwt.WithConfig(echojwt.Config{
+	c.PUT("/users", ctl.Update(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-	c.DELETE("/user", ctl.Delete(), echojwt.WithConfig(echojwt.Config{
+	c.DELETE("/users", ctl.Delete(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
-	c.GET("/user/:id", ctl.GetUserByIDParam(), echojwt.WithConfig(echojwt.Config{
+	c.GET("/users/:id", ctl.GetUserByIDParam(), echojwt.WithConfig(echojwt.Config{
 		SigningKey: []byte(config.JWTSECRET),
 	}))
 	c.GET("/avatar", ctl.Avatar(), echojwt.WithConfig(echojwt.Config{
