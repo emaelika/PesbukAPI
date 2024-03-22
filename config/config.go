@@ -5,6 +5,7 @@ import (
 	post "PesbukAPI/features/post/data"
 	user "PesbukAPI/features/user/data"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -81,4 +82,36 @@ func InitSQL(c AppConfig) *gorm.DB {
 	db.AutoMigrate(&user.User{}, &comment.Comment{}, &post.Post{})
 
 	return db
+}
+
+func InitDir(c AppConfig) error {
+	// init dir upload avatar
+	dir := "uploads"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Println(dir, "does not exist")
+		err = os.Mkdir(dir, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	dir = "uploads/avatars"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Println(dir, "does not exist")
+		err = os.Mkdir(dir, 0644)
+		if err != nil {
+			return err
+		}
+	}
+
+	dir = "uploads/pictures"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		log.Println(dir, "does not exist")
+		err = os.Mkdir(dir, 0644)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+	// init dir upload gambar
+
 }
