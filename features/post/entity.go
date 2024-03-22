@@ -33,6 +33,7 @@ type PostService interface {
 
 type Post struct {
 	ID        uint      `json:"id"`
+	UserID    uint      `json:"user_id"`
 	Picture   string    `json:"picture"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
