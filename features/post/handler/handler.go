@@ -105,9 +105,16 @@ func (ct *controller) Add() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError,
 				helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
 		}
-
+		var output = PostResponse{
+			ID:        newPost.ID,
+			Fullname:  newPost.Fullname,
+			Avatar:    newPost.Avatar,
+			Picture:   newPost.Picture,
+			Content:   newPost.Content,
+			CreatedAt: newPost.CreatedAt,
+		}
 		return c.JSON(http.StatusCreated,
-			helper.ResponseFormat(http.StatusCreated, "berhasil menambahkan postingan", newPost))
+			helper.ResponseFormat(http.StatusCreated, "berhasil menambahkan postingan", output))
 	}
 }
 

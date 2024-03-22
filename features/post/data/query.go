@@ -25,8 +25,12 @@ func (pm *model) AddPost(userid uint, pictureBaru string, contentBaru string) (p
 	if err := pm.connection.Create(&inputProcess).Error; err != nil {
 		return post.Post{}, err
 	}
-
-	return post.Post{Picture: inputProcess.Picture, Content: inputProcess.Content, CreatedAt: inputProcess.CreatedAt, ID: inputProcess.ID}, nil
+	var user User
+	if err := pm.connection.Where("id = ?", userid).First(&user).Error; err != nil {
+		log.Println("error repo", err.Error())
+		return post.Post{}, err
+	}
+	return post.Post{Picture: inputProcess.Picture, Content: inputProcess.Content, CreatedAt: inputProcess.CreatedAt.String(), ID: inputProcess.ID, Fullname: user.Fullname, Avatar: user.Avatar}, nil
 }
 
 func (pm *model) UpdatePost(userid uint, postID uint, data post.Post) (post.Post, error) {
@@ -86,7 +90,7 @@ func (pm *model) DeletePost(postID uint) error {
 
 func (pm *model) GetAllPosts() ([]post.Post, error) {
 	var result []post.Post
-	if err := pm.connection.Find(&result).Error; err != nil {
+	if err := pm.connection.Find(&result).Limit(15).Error; err != nil {
 		return nil, err
 	}
 	return result, nil
