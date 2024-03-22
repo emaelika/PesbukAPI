@@ -25,8 +25,12 @@ func (pm *model) AddPost(userid uint, pictureBaru string, contentBaru string) (p
 	if err := pm.connection.Create(&inputProcess).Error; err != nil {
 		return post.Post{}, err
 	}
+	var user User
 
-	return post.Post{Picture: inputProcess.Picture, Content: inputProcess.Content, CreatedAt: inputProcess.CreatedAt, ID: inputProcess.ID}, nil
+	if err := pm.connection.First(&user).Where(" id = ? ", userid).Error; err != nil {
+		return post.Post{}, err
+	}
+	return post.Post{Picture: inputProcess.Picture, Content: inputProcess.Content, CreatedAt: inputProcess.CreatedAt, ID: inputProcess.ID, Fullname: user.Fullname, Avatar: user.Avatar}, nil
 }
 
 func (pm *model) UpdatePost(userid uint, postID uint, data post.Post) (post.Post, error) {
@@ -89,6 +93,7 @@ func (pm *model) GetAllPosts() ([]post.Post, error) {
 	if err := pm.connection.Find(&result).Error; err != nil {
 		return nil, err
 	}
+
 	return result, nil
 }
 

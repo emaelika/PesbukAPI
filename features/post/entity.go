@@ -24,18 +24,18 @@ type PostModel interface {
 }
 
 type PostService interface {
-    AddPost(userid *jwt.Token, pictureBaru string, contentBaru string) (Post, error)
-    UpdatePost(userid *jwt.Token, postID uint, data Post) (Post, error)
-    DeletePost(userid *jwt.Token, postID uint) error
-    GetAllPosts() ([]Post, error)
+	AddPost(userid *jwt.Token, pictureBaru string, contentBaru string) (Post, error)
+	UpdatePost(userid *jwt.Token, postID uint, data Post) (Post, error)
+	DeletePost(userid *jwt.Token, postID uint) error
+	GetAllPosts() ([]Post, error)
 	GetPostByID(postID uint) (*Post, error)
 }
 
-
-
 type Post struct {
-	ID 			uint   `json:"id"`
-	Picture     string `json:"picture"`
-	Content 	string `json:"content"`
-	CreatedAt	time.Time `json:"created_at"`
+	ID        uint      `json:"id"`
+	Picture   string    `json:"picture"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Avatar    string    `json:"avatar"`
+	Fullname  string    `json:"fullname"`
 }
