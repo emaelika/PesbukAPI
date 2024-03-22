@@ -1,5 +1,5 @@
 package handler
 
 type CommentRequest struct {
-	Komentar string `json:"komentar" form:"komentar"`
+	Content string `json:"content" form:"content"`
 }

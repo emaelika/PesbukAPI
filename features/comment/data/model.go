@@ -6,5 +6,5 @@ type Comment struct {
 	gorm.Model
 	UserID uint
 	PostID uint
-	Komentar string
+	Content string
 }

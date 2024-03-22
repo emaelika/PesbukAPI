@@ -17,13 +17,14 @@ func New(db *gorm.DB) comment.CommentModel {
 	}
 }
 
-func (cm *model) AddComment(userid uint, komentarBaru string) (comment.Comment, error) {
-	var inputProcess = Comment{Komentar: komentarBaru, UserID: userid}
-	if err := cm.connection.Create(&inputProcess).Error; err != nil {
-		return comment.Comment{}, err
-	}
-	return comment.Comment{Komentar: inputProcess.Komentar},nil
+func (cm *model) AddComment(userid uint, postID uint, contentBaru string) (comment.Comment, error) {
+    var inputProcess = Comment{PostID: postID, Content: contentBaru, UserID: userid}
+    if err := cm.connection.Create(&inputProcess).Error; err != nil {
+        return comment.Comment{}, err
+    }
+    return comment.Comment{Content: inputProcess.Content}, nil
 }
+
 
 func (cm *model) UpdateComment(userid uint, commentID uint, data comment.Comment) (comment.Comment, error) {
 	var qry = cm.connection.Where("user_id = ? AND id = ?", userid, commentID).Updates(data)
@@ -58,3 +59,12 @@ func (cm *model) GetCommentByOwner(userid uint) ([]comment.Comment, error) {
 	}
 	return result, nil
 }
+
+func (cm *model) GetAllComments() ([]comment.Comment, error) {
+	var result []comment.Comment
+	if err := cm.connection.Find(&result).Error; err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
