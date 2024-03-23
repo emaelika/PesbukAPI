@@ -6,6 +6,7 @@ import (
 	cloudnr "PesbukAPI/utils"
 	"context"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -233,15 +234,48 @@ func (ct *controller) Delete() echo.HandlerFunc {
 
 func (ct *controller) ShowAllPosts() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		posts, err := ct.s.GetAllPosts()
+		// old code
+
+		// get pagination - start
+		var paging helper.Pagination
+
+		page, err := strconv.Atoi(c.QueryParam("page"))
+		if err != nil || page <= 0 {
+			page = 1
+		}
+
+		pageSize, err := strconv.Atoi(c.QueryParam("pagesize"))
+		if err != nil || pageSize <= 0 {
+			pageSize = 10
+		}
+		paging.Page = page
+		paging.Pagesize = pageSize
+
+		posts, total, err := ct.s.GetAllPosts(paging)
 		if err != nil {
 			log.Println("error get all posts:", err.Error())
 			return c.JSON(http.StatusInternalServerError,
 				helper.ResponseFormat(http.StatusInternalServerError, helper.ServerGeneralError, nil))
 		}
+		totalPages := int(math.Ceil(float64(total) / float64(pageSize)))
+		paging.TotalPages = totalPages
 
+		// parsing data ke response
+		var results []GetAllResponse
+		for _, val := range posts {
+			var result = GetAllResponse{
+				ID:           val.ID,
+				Picture:      val.Picture,
+				Content:      val.Content,
+				CommentCount: val.CommentCount,
+				Avatar:       val.Avatar,
+				Fullname:     val.Fullname,
+				CreatedAt:    val.CreatedAt,
+			}
+			results = append(results, result)
+		}
 		return c.JSON(http.StatusOK,
-			helper.ResponseFormat(http.StatusOK, "semua postingan", posts))
+			helper.ResponseArrayFormat(http.StatusOK, "semua postingan", results, paging))
 	}
 }
 

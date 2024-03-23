@@ -30,8 +30,9 @@ type CommentService interface {
 }
 
 type Comment struct {
-	ID uint `json:"id"`
-	UserID uint `json:"user_id"`
-	PostID uint `json:"post_id"`
-	Content string `json:"content"`
+	ID        uint   `json:"id"`
+	Content   string `json:"content"`
+	CreatedAt string `json:"created_at"`
+	Avatar    string `json:"avatar"`
+	Fullname  string `json:"fullname"`
 }
